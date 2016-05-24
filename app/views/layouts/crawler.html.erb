@@ -2,8 +2,26 @@
 <html lang="<%= SiteSetting.default_locale %>">
   <head>
     <meta charset="utf-8">
-    <title><%= content_for?(:title) ? yield(:title) + ' - ' + SiteSetting.title : SiteSetting.title %></title>
-    <meta name="description" content="<%= @description_meta || SiteSetting.site_description %>">
+    <%
+    tagTitle = content_for?(:title) ? yield(:title) + ' - ' + SiteSetting.title : SiteSetting.title
+    tagMetaDescription = @description_meta || SiteSetting.site_description
+
+    def shortener(string, type)
+      limit = type == 'title' ? 53 : 153
+
+      if string.length <= limit
+        return string
+      end
+
+      stringShort = string[0..limit]
+      cutOn = stringShort.rindex(' ') > limit / 2 ? stringShort.rindex(' ') : limit
+      stringShort = stringShort[0..cutOn] + '...'
+
+      return stringShort
+    end
+    %>
+    <title><%= shortener(tagTitle, 'title') %></title>
+    <meta name="description" content="<%= shortener(tagMetaDescription, 'description') %>">
     <%= render partial: "layouts/head" %>
     <%- unless customization_disabled? %>
       <%= raw SiteCustomization.custom_head_tag(session[:preview_style]) %>
